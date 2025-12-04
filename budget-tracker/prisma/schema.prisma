@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model BankAccount {
+  id              String        @id @default(cuid())
+  plaidAccountId  String        @unique
+  plaidItemId     String
+  accessToken     String
+  institutionName String
+  accountName     String
+  accountType     String        // "checking" or "credit"
+  transactions    Transaction[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Transaction {
+  id                 String      @id @default(cuid())
+  plaidTransactionId String      @unique
+  accountId          String
+  account            BankAccount @relation(fields: [accountId], references: [id])
+  amount             Float
+  date               DateTime
+  name               String
+  merchantName       String?
+  categoryId         String?
+  category           Category?   @relation(fields: [categoryId], references: [id])
+  pending            Boolean     @default(false)
+  createdAt          DateTime    @default(now())
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  type         String        // "need", "want", or "savings"
+  icon         String?       // emoji or icon name
+  transactions Transaction[]
+  budgetItems  BudgetItem[]
+}
+
+model BudgetItem {
+  id            String   @id @default(cuid())
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  monthlyAmount Float
+  weeklyAmount  Float    // Auto-calculated: monthlyAmount / 4.33
+  month         Int      // 1-12
+  year          Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([categoryId, month, year])
+}
+
+model PlaidItem {
+  id          String   @id @default(cuid())
+  itemId      String   @unique
+  accessToken String
+  cursor      String?  // For transaction sync
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
