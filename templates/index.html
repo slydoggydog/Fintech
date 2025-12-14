@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Create Game Night - Game Night Coordinator{% endblock %}
+
+{% block content %}
+<div class="card create-session">
+    <h2>Plan Your Game Night</h2>
+    <p class="subtitle">Create a poll to find the best night for your squad to play!</p>
+
+    <form action="{{ url_for('create_session') }}" method="POST" class="create-form">
+        <div class="form-group">
+            <label for="session_name">What's the occasion?</label>
+            <input type="text" id="session_name" name="session_name"
+                   placeholder="e.g., Weekly Valorant Night, Minecraft Marathon"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label for="creator_name">Your name</label>
+            <input type="text" id="creator_name" name="creator_name"
+                   placeholder="Enter your gamer tag"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label for="start_date">Week starting from</label>
+            <input type="date" id="start_date" name="start_date">
+            <small>Leave empty for this coming week</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Create Poll 🚀
+        </button>
+    </form>
+</div>
+
+<div class="card how-it-works">
+    <h3>How it works</h3>
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-text">Create a poll for your gaming session</div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-text">Share the link with your friends</div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-text">Everyone picks their available nights</div>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-text">See which nights work best for everyone!</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

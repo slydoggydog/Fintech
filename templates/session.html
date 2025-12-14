@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ session.name }} - Game Night Coordinator{% endblock %}
+
+{% block content %}
+<div class="card session-info">
+    <h2>{{ session.name }}</h2>
+    <p class="subtitle">Created by {{ session.creator }}</p>
+    <p class="participant-count">{{ session.participants|length }} friend{{ 's' if session.participants|length != 1 else '' }} have voted</p>
+</div>
+
+<div class="card join-options">
+    <h3>What would you like to do?</h3>
+
+    <div class="action-buttons">
+        <a href="{{ url_for('vote', session_id=session.id) }}" class="btn btn-primary btn-large">
+            <span class="btn-icon">✋</span>
+            <span class="btn-text">
+                <strong>Submit My Availability</strong>
+                <small>Pick the nights you can play</small>
+            </span>
+        </a>
+
+        <a href="{{ url_for('results', session_id=session.id) }}" class="btn btn-secondary btn-large">
+            <span class="btn-icon">📊</span>
+            <span class="btn-text">
+                <strong>View Results</strong>
+                <small>See when everyone's free</small>
+            </span>
+        </a>
+    </div>
+</div>
+
+<div class="card week-preview">
+    <h3>This Week's Schedule</h3>
+    <div class="week-days">
+        {% for date_info in session.week_dates %}
+        <div class="preview-day">
+            <span class="day-name">{{ date_info.day_name[:3] }}</span>
+            <span class="date-display">{{ date_info.display }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

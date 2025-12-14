@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Results - {{ session.name }}{% endblock %}
+
+{% block content %}
+<div class="card session-info">
+    <h2>{{ session.name }}</h2>
+    <p class="subtitle">Created by {{ session.creator }}</p>
+
+    <div class="share-link">
+        <label>Share this link with friends who haven't voted:</label>
+        <div class="link-box">
+            <input type="text" id="share-url" value="{{ request.url_root }}session/{{ session.id }}/vote" readonly>
+            <button onclick="copyLink()" class="btn btn-secondary" id="copy-btn">Copy</button>
+        </div>
+    </div>
+</div>
+
+{% if perfect_nights %}
+<div class="card perfect-nights">
+    <h3>🎉 Perfect Night{{ 's' if perfect_nights|length > 1 else '' }} Found!</h3>
+    <p class="subtitle">Everyone can make it on:</p>
+    <div class="perfect-list">
+        {% for night in perfect_nights %}
+        <div class="perfect-night">
+            <span class="day">{{ night.day_name }}</span>
+            <span class="date">{{ night.display }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% elif total_participants > 0 %}
+<div class="card no-perfect">
+    <h3>No perfect match yet</h3>
+    <p>No single night works for everyone yet. Check the availability below to find the best options!</p>
+</div>
+{% endif %}
+
+<div class="card results-card">
+    <h3>Availability Overview</h3>
+    <p class="subtitle">{{ total_participants }} friend{{ 's' if total_participants != 1 else '' }} voted</p>
+
+    <div class="results-grid">
+        {% for date, data in date_counts.items() %}
+        <div class="result-day {% if data.count == max_count and max_count > 0 %}best-night{% endif %} {% if data.count == total_participants and total_participants > 0 %}perfect{% endif %}">
+            <div class="day-header">
+                <span class="day-name">{{ data.day_name }}</span>
+                <span class="date-display">{{ data.display }}</span>
+            </div>
+
+            <div class="availability-bar">
+                <div class="bar-fill" style="width: {{ (data.count / total_participants * 100) if total_participants > 0 else 0 }}%"></div>
+            </div>
+
+            <div class="vote-count">
+                <span class="count">{{ data.count }}</span> / {{ total_participants }}
+                {% if data.count == total_participants and total_participants > 0 %}
+                <span class="badge perfect-badge">Everyone!</span>
+                {% elif data.count == max_count and max_count > 0 %}
+                <span class="badge best-badge">Best option</span>
+                {% endif %}
+            </div>
+
+            {% if data.voters %}
+            <div class="voters">
+                {% for voter in data.voters %}
+                <span class="voter-tag">{{ voter }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="voters empty">No one available</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card participants-card">
+    <h3>Who's Voted</h3>
+    {% if session.participants %}
+    <div class="participants-list">
+        {% for name, data in session.participants.items() %}
+        <div class="participant">
+            <span class="participant-name">{{ name }}</span>
+            <span class="participant-dates">{{ data.available_dates|length }} night{{ 's' if data.available_dates|length != 1 else '' }} available</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">No votes yet. Share the link to get started!</p>
+    {% endif %}
+</div>
+
+<div class="card actions">
+    <a href="{{ url_for('vote', session_id=session.id) }}" class="btn btn-primary">
+        Add/Update My Vote
+    </a>
+    <button onclick="location.reload()" class="btn btn-secondary">
+        Refresh Results 🔄
+    </button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyLink() {
+    const input = document.getElementById('share-url');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(input.value);
+
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+
+    setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+    }, 2000);
+}
+
+// Auto-refresh every 30 seconds
+setTimeout(() => location.reload(), 30000);
+</script>
+{% endblock %}

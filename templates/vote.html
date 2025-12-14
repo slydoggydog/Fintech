@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Vote - {{ session.name }}{% endblock %}
+
+{% block content %}
+<div class="card session-info">
+    <h2>{{ session.name }}</h2>
+    <p class="subtitle">Created by {{ session.creator }}</p>
+
+    <div class="share-link">
+        <label>Share this link with your friends:</label>
+        <div class="link-box">
+            <input type="text" id="share-url" value="{{ request.url_root }}session/{{ session.id }}" readonly>
+            <button onclick="copyLink()" class="btn btn-secondary" id="copy-btn">Copy</button>
+        </div>
+    </div>
+</div>
+
+<div class="card vote-card">
+    <h3>Select the nights you're available</h3>
+    <p class="subtitle">Pick all the nights that work for you</p>
+
+    <form action="{{ url_for('vote', session_id=session.id) }}" method="POST" class="vote-form">
+        <div class="form-group">
+            <label for="name">Your name</label>
+            <input type="text" id="name" name="name"
+                   value="{{ name }}"
+                   placeholder="Enter your gamer tag"
+                   required>
+        </div>
+
+        <div class="calendar-grid">
+            {% for date_info in session.week_dates %}
+            <label class="date-card" for="date-{{ date_info.date }}">
+                <input type="checkbox"
+                       id="date-{{ date_info.date }}"
+                       name="dates"
+                       value="{{ date_info.date }}">
+                <div class="date-content">
+                    <span class="day-name">{{ date_info.day_name }}</span>
+                    <span class="date-display">{{ date_info.display }}</span>
+                </div>
+                <div class="checkmark">✓</div>
+            </label>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Submit My Availability
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <a href="{{ url_for('results', session_id=session.id) }}" class="btn btn-secondary btn-full">
+        View Current Results 📊
+    </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyLink() {
+    const input = document.getElementById('share-url');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(input.value);
+
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+
+    setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+    }, 2000);
+}
+</script>
+{% endblock %}
