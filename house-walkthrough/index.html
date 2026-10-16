@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>419 Jersey Avenue · A Walk Through Home</title>
+  <style>
+    :root { --navy: #1f3557; --cream: #f6f1e6; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #a9cff0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    #app { position: fixed; inset: 0; }
+    #app canvas { display: block; touch-action: none; outline: none; cursor: grab; }
+    #app canvas:active { cursor: grabbing; }
+
+    .card { background: rgba(255, 255, 255, 0.86); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 14px; box-shadow: 0 6px 24px rgba(20, 40, 70, 0.18); color: #1d2a3a; }
+
+    #title { position: fixed; top: 16px; left: 16px; padding: 12px 18px; pointer-events: none; }
+    #title h1 { margin: 0; font: 600 20px/1.2 Georgia, "Times New Roman", serif; color: var(--navy); }
+    #title p { margin: 3px 0 0; font-size: 12.5px; color: #4b5a6c; letter-spacing: 0.02em; }
+
+    #room { position: fixed; top: 22px; left: 50%; transform: translate(-50%, -12px); padding: 9px 20px; font: 600 17px Georgia, serif; color: var(--navy); opacity: 0; transition: opacity .5s, transform .5s; pointer-events: none; white-space: nowrap; }
+    #room.show { opacity: 1; transform: translate(-50%, 0); }
+
+    #help { position: fixed; left: 16px; bottom: 16px; padding: 14px 16px; font-size: 13px; line-height: 1.55; max-width: 290px; }
+    #help.hidden { display: none; }
+    #help b { display: inline-block; min-width: 92px; color: var(--navy); }
+    #help .touch { display: none; }
+    @media (pointer: coarse) { #help .desk { display: none; } #help .touch { display: block; } }
+
+    #places { position: fixed; top: 16px; right: 16px; width: 180px; padding: 10px; }
+    #places header { display: flex; justify-content: space-between; align-items: center; font: 600 13px Georgia, serif; color: var(--navy); padding: 2px 4px 8px; cursor: pointer; user-select: none; }
+    #places.collapsed #place-list, #places.collapsed .tools { display: none; }
+    #places.collapsed header { padding-bottom: 2px; }
+    #place-list, .tools { display: grid; gap: 5px; }
+    .tools { margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(31, 53, 87, .15); }
+    button { font: inherit; font-size: 13px; padding: 7px 10px; border-radius: 9px; border: 1px solid rgba(31, 53, 87, .18); background: #fff; color: #1d2a3a; cursor: pointer; text-align: left; transition: background .15s, border-color .15s; }
+    button:hover { background: #eef4fb; border-color: rgba(31, 53, 87, .35); }
+    .tools button { background: var(--navy); color: #fff; border-color: var(--navy); text-align: center; }
+    .tools button:hover { background: #2c4a78; }
+
+    #joystick { position: fixed; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,.25); border: 2px solid rgba(255,255,255,.6); display: none; pointer-events: none; }
+    #joystick.active { display: block; }
+    #knob { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,.85); }
+
+    #intro { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at center, rgba(246,241,230,.9), rgba(214,228,240,.94)); transition: opacity .8s; z-index: 10; padding: 20px; }
+    #intro.gone { opacity: 0; pointer-events: none; }
+    #intro .box { max-width: 520px; text-align: center; color: #23324a; }
+    #intro h2 { font: 600 34px/1.15 Georgia, serif; margin: 0 0 6px; color: var(--navy); }
+    #intro .addr { font-size: 14px; letter-spacing: .08em; text-transform: uppercase; color: #5a6a7e; margin-bottom: 22px; }
+    #intro p { font-size: 15px; line-height: 1.6; margin: 0 0 14px; }
+    #intro .note { font-size: 12.5px; color: #66768a; }
+    #start { margin-top: 10px; background: var(--navy); color: #fff; font-size: 16px; padding: 12px 30px; border-radius: 999px; text-align: center; }
+    #start:hover { background: #2c4a78; }
+    @media (max-width: 640px) {
+      #title { top: 10px; left: 10px; padding: 8px 12px; }
+      #title h1 { font-size: 16px; }
+      #places { top: auto; bottom: 10px; right: 10px; width: 160px; }
+      #help { display: none; }
+      #room { top: 70px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <div id="title" class="card">
+    <h1>419 Jersey Avenue</h1>
+    <p>Spring Lake, New Jersey · Built 1953</p>
+  </div>
+
+  <div id="room" class="card"></div>
+
+  <div id="help" class="card">
+    <div class="desk">
+      <div><b>W A S D</b> or arrow keys to walk</div>
+      <div><b>Shift</b> hold to jog</div>
+      <div><b>Drag mouse</b> look around</div>
+      <div><b>Scroll</b> zoom camera in / out</div>
+      <div><b>V</b> first-person / third-person</div>
+      <div><b>H</b> hide this help</div>
+    </div>
+    <div class="touch">
+      <div><b>Left thumb</b> drag to walk</div>
+      <div><b>Right thumb</b> drag to look</div>
+    </div>
+  </div>
+
+  <div id="places" class="card">
+    <header id="places-toggle"><span>Go to…</span><span>☰</span></header>
+    <div id="place-list"></div>
+    <div class="tools">
+      <button id="view-btn">First-person view</button>
+      <button id="outfit-btn">Change outfit</button>
+      <button id="help-btn">Show / hide help</button>
+    </div>
+  </div>
+
+  <div id="joystick"><div id="knob"></div></div>
+
+  <div id="intro">
+    <div class="box">
+      <h2>Welcome home</h2>
+      <div class="addr">419 Jersey Avenue · Spring Lake, NJ</div>
+      <p>A 3D model of the 1953 Cape Cod, rebuilt from its listing photos and details: the living room with the bay window and wood-burning fireplace, the blue dining room, the kitchen with its skylight, the screened back porch, three bedrooms downstairs and two upstairs, and the deep backyard with the outdoor shower and shed.</p>
+      <p class="note">Room sizes and some interior details are approximated from photos.</p>
+      <button id="start">Start walking</button>
+    </div>
+  </div>
+
+  <script src="dist/walkthrough.js"></script>
+</body>
+</html>
