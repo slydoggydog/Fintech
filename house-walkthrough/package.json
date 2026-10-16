@@ -1,0 +1,20 @@
+{
+  "name": "house-walkthrough",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild src/main.js --bundle --minify --format=iife --target=es2020 --outfile=dist/walkthrough.js",
+    "dev": "esbuild src/main.js --bundle --format=iife --outfile=dist/walkthrough.js --watch --servedir=."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
